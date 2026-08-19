@@ -3,23 +3,36 @@ const $ = (id) => document.getElementById(id);
 let STATE = null; // 当前快照
 let ME = null;    // 我的信息
 let es = null;
+let DEMO = false; // 演示模式（GitHub Pages 静态预览，无后端时启用）
 
 const ROLE_NAME = { detective: '侦探', innocent: '无辜者', killer: '杀手', transfered: '原侦探' };
 const ROLE_ICON = { detective: '🕵️', innocent: '😇', killer: '🔪', transfered: '👻' };
 
+// ---------- API（演示模式拦截） ----------
+async function api(url, body) {
+  if (DEMO) return { err: '🧪 演示模式：仅静态预览 UI，完整功能需本地运行 node server.js' };
+  try {
+    const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    return await res.json();
+  } catch (e) { return { err: '网络错误' }; }
+}
+
 // ---------- 登录 ----------
 $('btnCreate').onclick = async () => {
+  if (DEMO) return enterDemo();
   const name = $('nick').value.trim() || '玩家';
   const r = await api('/api/room/create', { name });
   if (r.err) return showErr(r.err);
   enter(r);
 };
 $('btnJoin').onclick = async () => {
+  if (DEMO) return enterDemo();
   $('joinCode').style.display = 'block';
   $('joinCode').focus();
 };
 $('joinCode').onkeydown = async (e) => {
   if (e.key === 'Enter') {
+    if (DEMO) return enterDemo();
     const name = $('nick').value.trim() || '玩家';
     const r = await api('/api/room/join', { roomId: $('joinCode').value, name });
     if (r.err) return showErr(r.err);
@@ -36,12 +49,56 @@ async function enter(r) {
   connect(r.roomId, r.playerId);
 }
 
-async function api(url, body) {
-  try {
-    const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    return await res.json();
-  } catch (e) { return { err: '网络错误' }; }
+// ============ 演示模式（GitHub Pages 静态预览） ============
+function enterDemo() {
+  DEMO = true;
+  $('login').hidden = true;
+  $('game').hidden = false;
+  $('demoBanner').hidden = false;
+  STATE = {
+    id: 'DEMO',
+    host: 'p1',
+    phase: 'playing',
+    T: 40, perQuota: 8, penalty: 4, killerUses: 2,
+    soupFace: '深夜，狼嚎了，大地又见红了。\n天亮，鸡鸣了，屋子又染白了。',
+    players: [
+      { id: 'p1', name: '我', isHost: true, role: 'detective', quota: 6, alive: true },
+      { id: 'p2', name: '阿K', isHost: false, role: null, quota: null, alive: true },
+      { id: 'p3', name: '小美', isHost: false, role: null, quota: null, alive: true },
+      { id: 'p4', name: '老六', isHost: false, role: null, quota: null, alive: true },
+      { id: 'p5', name: '大壮', isHost: false, role: null, quota: null, alive: false },
+    ],
+    me: { id: 'p1', name: '我', role: 'detective', quota: 6, alive: true, isHost: true },
+    messages: [
+      { id: 'm1', type: 'system', from: null, text: '游戏开始！总猜测次数 T=40，每人 8 次。次数保密，自己记账。' },
+      { id: 'm2', type: 'soup', from: null, text: '深夜，狼嚎了，大地又见红了。天亮，鸡鸣了，屋子又染白了。' },
+      { id: 'm3', type: 'chat', from: 'p3', text: '这汤面也太文艺了吧，翻译翻译？' },
+      { id: 'm4', type: 'question', from: 'p2', text: '狼嚎是真的狼在叫吗？' },
+      { id: 'm5', type: 'answer', from: null, text: '否' },
+      { id: 'm6', type: 'question', from: 'p1', text: '“大地见红”指的是血吗？' },
+      { id: 'm7', type: 'answer', from: null, text: '是' },
+      { id: 'm8', type: 'soup', from: null, text: '📜 主持人补充：那晚的嚎叫，不是狼。' },
+      { id: 'm9', type: 'chat', from: 'p4', text: '卧槽，那是什么在叫？' },
+      { id: 'm10', type: 'private', from: null, text: '🔒 你是侦探：可私下向主持人申请提示（演示数据）', to: 'p1' },
+      { id: 'm11', type: 'kill', from: null, text: '🔪 杀手出手！大壮的全部猜汤底次数被清空，出局！' },
+    ],
+  };
+  render();
 }
+
+// 后端探测：静态托管（如 GitHub Pages）下自动进入演示模式
+(async function probe() {
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 2500);
+    const r = await fetch('/api/room/create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'probe' }), signal: ctrl.signal });
+    clearTimeout(t);
+    if (!r.ok) return enterDemo();
+    // 后端在：探测房间会残留，直接清理不了，但无碍
+  } catch (e) {
+    enterDemo();
+  }
+})();
 
 // ---------- SSE 连接 ----------
 function connect(roomId, playerId) {
