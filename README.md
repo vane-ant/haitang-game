@@ -57,10 +57,9 @@ node server.js
 ```
 ├── server.js        # 零依赖 Node 服务器（房间/状态/SSE 推送）
 ├── zeabur.json      # Zeabur 部署配置
-├── public/
-│   ├── index.html   # 竖屏聊天室页面
-│   ├── style.css    # 深色聊天室 UI
-│   └── client.js    # 前端逻辑（SSE 订阅 + 房主控制台）
+├── index.html       # 竖屏聊天室页面（前端也在仓库根目录，便于 GitHub Pages 托管）
+├── style.css        # 深色聊天室 UI
+├── client.js        # 前端逻辑（SSE 订阅 + 房主控制台，含演示模式）
 ├── test.js          # 全链路冒烟测试（自启服务器）
 └── README.md
 ```
