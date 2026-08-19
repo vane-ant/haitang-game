@@ -1,0 +1,10 @@
+{
+  "$schema": "https://zeabur.com/zh-CN/schema.json",
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": ""
+  },
+  "run": {
+    "startCommand": "node server.js"
+  }
+}
