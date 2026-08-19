@@ -13,7 +13,7 @@
 - 🔪 **杀手清空**：房主代执行清空任意玩家全部次数（2 次）
 - 🕵️ **侦探转让**：房主操作侦探身份转让（不公开）
 
-## 🚀 快速开始
+## 🚀 本地运行
 
 ```bash
 # 需要 Node.js 18+（无需任何 npm 包）
@@ -21,19 +21,26 @@ node server.js
 # 访问 http://localhost:3000
 ```
 
-**局域网联机**：手机和电脑连同一 WiFi，手机浏览器访问 `http://<电脑IP>:3000`（如 `http://192.168.1.5:3000`）。
+**局域网联机**：手机和电脑连同一 WiFi，手机浏览器访问 `http://<电脑IP>:3000`。
 
-## 🌍 部署到公网（好友异地玩）
+## 🌍 部署到公网（好友异地玩）—— Zeabur 免费方案
 
-### 方式一：Render 免费托管（推荐）
-1. 把本仓库推送到 GitHub
-2. 注册 [render.com](https://render.com) → New → Web Service
-3. 连接你的 GitHub 仓库，Build Command 留空，Start Command 填 `node server.js`
-4. 免费实例会自动分配 `https://xxx.onrender.com` 公网地址，好友直接访问即可
-5. 注意：免费实例闲置会休眠，首次访问需等几秒唤醒
+项目已内置 `zeabur.json` 配置，**零改造**直接部署：
 
-### 方式二：其他平台
-Railway / Fly.io / 各类云服务器均可，只要是 Node 环境 + 开放端口即可，`PORT` 环境变量自动适配。
+1. 注册 [zeabur.com](https://zeabur.com)（支持 GitHub 登录，国内可直连）
+2. 新建项目 → **部署你的代码** → 导入 GitHub 仓库 `haitang-game`
+3. 系统自动识别 Node.js 并执行 `node server.js`（`zeabur.json` 已配好）
+4. 部署完成自动分配免费域名 `https://xxx.zeabur.app`，**大陆可直接访问**
+5. 把网址发给好友，随时开玩
+
+> 💰 免费额度：每月赠送 $5 用量，低流量聊天室基本够用；用完按量计费（几毛钱级），可在后台设置用量限额。
+> ⚠️ 免费额度域名闲置会休眠，首次访问等几秒唤醒。
+
+### 其他平台备选
+
+- **Render**：`node server.js` 即可，但国内 IP 可能要求绑卡
+- **内网穿透（natapp 等）**：本地 `node server.js` + 免费隧道，电脑需常开
+- **Glitch**：import 仓库即跑，但国内访问不稳定
 
 ## 🎮 玩法速览
 
@@ -49,11 +56,13 @@ Railway / Fly.io / 各类云服务器均可，只要是 Node 环境 + 开放端�
 
 ```
 ├── server.js        # 零依赖 Node 服务器（房间/状态/SSE 推送）
+├── zeabur.json      # Zeabur 部署配置
 ├── public/
 │   ├── index.html   # 竖屏聊天室页面
 │   ├── style.css    # 深色聊天室 UI
 │   └── client.js    # 前端逻辑（SSE 订阅 + 房主控制台）
-└── test.js          # 全链路冒烟测试（自启服务器）
+├── test.js          # 全链路冒烟测试（自启服务器）
+└── README.md
 ```
 
 ## 🔒 说明
